@@ -1,6 +1,6 @@
 // Copyright (c) 2012 VMware, Inc.
 
-// +build darwin freebsd linux netbsd openbsd
+// +build darwin linux netbsd openbsd
 
 package sigar
 

@@ -5,7 +5,18 @@ PROJECT=github.com/containerd/containerd
 GIT_COMMIT := $(shell git rev-parse HEAD 2> /dev/null || true)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2> /dev/null)
 
-LDFLAGS := -X github.com/containerd/containerd.GitCommit=${GIT_COMMIT} ${LDFLAGS}
+# --------------------------------------------------------------------
+#
+# epoll library flags for epoll_freebsd.go
+# @(kris-nova)
+#
+#
+CFLAGS=-I /usr/local/include/libepoll-shim ${CFLAGS}
+LDFLAGS := -I ld -X github.com/containerd/containerd.GitCommit=${GIT_COMMIT} ${LDFLAGS}
+#
+#
+# --------------------------------------------------------------------
+
 
 TEST_TIMEOUT ?= 5m
 TEST_SUITE_TIMEOUT ?= 10m
