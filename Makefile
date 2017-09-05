@@ -85,9 +85,10 @@ endif
 # Here we define custom epoll library flags for epoll_freebsd.go which
 # is running over the Linux API but compiled for BSD. Here be dragons.
 #
+# @(kris-nova)
 #
 #
-CFLAGS=-I /usr/local/include/libepoll-shim ${CFLAGS}
+CFLAGS := -I /usr/local/include/libepoll-shim ${CFLAGS}
 LDFLAGS := -I ld -X github.com/containerd/containerd.GitCommit=${GIT_COMMIT} ${LDFLAGS}
 #
 #
