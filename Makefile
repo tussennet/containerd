@@ -67,6 +67,36 @@ RELEASE=containerd-$(VERSION:v%=%).${GOOS}-${GOARCH}
 
 PKG=github.com/containerd/containerd
 
+# Project binaries.
+COMMANDS=ctr containerd containerd-stress
+MANPAGES=ctr.8 containerd.8 containerd-config.8 containerd-config.toml.5
+
+ifdef BUILDTAGS
+    GO_BUILDTAGS = ${BUILDTAGS}
+endif
+
+
+
+# --------------------------------------------------------------------
+#
+# epoll library flags for epoll_freebsd.go, this is merged in but it doesn't seem the build is still using the plain CFLAGS and LDFLAGS
+# @(kris-nova)
+#
+#
+CFLAGS=-I /usr/local/include/libepoll-shim ${CFLAGS}
+LDFLAGS := -I ld -X github.com/containerd/containerd.GitCommit=${GIT_COMMIT} ${LDFLAGS}
+#
+#
+# --------------------------------------------------------------------
+
+
+# Build tags apparmor and selinux are needed by CRI plugin.
+GO_BUILDTAGS ?= apparmor selinux
+GO_BUILDTAGS += ${DEBUG_TAGS}
+GO_TAGS=$(if $(GO_BUILDTAGS),-tags "$(GO_BUILDTAGS)",)
+GO_LDFLAGS=-ldflags '-X $(PKG)/version.Version=$(VERSION) -X $(PKG)/version.Revision=$(REVISION) -X $(PKG)/version.Package=$(PACKAGE) $(EXTRA_LDFLAGS)'
+SHIM_GO_LDFLAGS=-ldflags '-X $(PKG)/version.Version=$(VERSION) -X $(PKG)/version.Revision=$(REVISION) -X $(PKG)/version.Package=$(PACKAGE) -extldflags "-static" $(EXTRA_LDFLAGS)'
+
 # Project packages.
 PACKAGES=$(shell go list ./... | grep -v /vendor/)
 INTEGRATION_PACKAGE=${PKG}
