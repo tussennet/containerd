@@ -39,11 +39,15 @@ func ioctl(fd uintptr, flag, data uintptr) error {
 	return nil
 }
 
+const (
+	FREEBSD_TIOCSPTLCK = 0x40045431
+)
+
 // unlockpt unlocks the slave pseudoterminal device corresponding to the master pseudoterminal referred to by f.
 // unlockpt should be called before opening the slave side of a pty.
 func unlockpt(f *os.File) error {
 	var u int32
-	return ioctl(f.Fd(), syscall.TIOCSPTLCK, uintptr(unsafe.Pointer(&u)))
+	return ioctl(f.Fd(), FREEBSD_TIOCSPTLCK, uintptr(unsafe.Pointer(&u)))
 }
 
 // ptsname retrieves the name of the first available pts for the given master.
