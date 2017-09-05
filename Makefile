@@ -81,6 +81,9 @@ endif
 #
 # epoll library flags for epoll_freebsd.go, this is merged in but it doesn't seem the build is still using the plain CFLAGS and LDFLAGS
 # @(kris-nova)
+# Here we define custom epoll library flags for epoll_freebsd.go which
+# is running over the Linux API but compiled for BSD. Here be dragons.
+#
 #
 #
 CFLAGS=-I /usr/local/include/libepoll-shim ${CFLAGS}
