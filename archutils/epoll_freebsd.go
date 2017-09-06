@@ -2,6 +2,7 @@
 
 // -----------------------------------------------------------------------------------------
 //
+//
 // (@kris-nova)
 //
 // Probably most of my god awful hacking is done in this file, most of this is in place to
@@ -10,6 +11,8 @@
 //
 // For more information or just to yell at me shoot me a line at kris@nivenly.com
 //
+//
+// -----------------------------------------------------------------------------------------
 
 package archutils
 
@@ -25,19 +28,20 @@ int EpollCtl(int efd, int op,int sfd, int events, int fd) {
 	struct epoll_event event;
 	event.events = events;
 	event.data.fd = fd;
-
 	return epoll_ctl(efd, op, sfd, &event);
 }
 
 struct event_t {
 	uint32_t events;
+	epoll_data_t data;
 	int fd;
 };
 
 struct epoll_event events[128];
+
 int run_epoll_wait(int fd, struct event_t *event) {
 	int n, i;
-	n = epoll_wait(fd, events, 128, -1);
+	n = epoll_wait(fd, events, 128, 0);
 	for (i = 0; i < n; i++) {
 		event[i].events = events[i].events;
 		event[i].fd = events[i].data.fd;
@@ -49,7 +53,7 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
+	//"unsafe"
 )
 
 // EpollCreate1 calls a C implementation
@@ -79,23 +83,13 @@ const (
 	//
 	// (@kris-nova)
 	//
-	FREEBSD_EPOLL_CTL_ADD = 0x1
-	FREEBSD_EPOLL_CLOEXEC = 0x80000
-	FREEBSD_EPOLL_CTL_DEL = 0x2
-	FREEBSD_EPOLLHUP      = 0x10
-	FREEBSD_EPOLLIN       = 0x1
+	FREEBSD_EPOLL_CTL_ADD = 1
+	FREEBSD_EPOLL_CTL_DEL = 2
+	FREEBSD_EPOLL_CLOEXEC = 0x00100000
+	FREEBSD_EPOLLHUP      = 0x010
+	FREEBSD_EPOLLIN       = 0x001
 	FREEBSD_SYS_EPOLL_CTL = 233
 )
-
-// EpollCtl is a another hack to get the sys call running without having a dependency on linux
-//func EpollCtl(epfd int, op int, fd int, eventInterface FreeBSDEpollEventInterface) (err error) {
-//	event := eventInterface.(*FreeBSDEpollEvent)
-//	_, _, e1 := syscall.RawSyscall6(FREEBSD_SYS_EPOLL_CTL, uintptr(epfd), uintptr(op), uintptr(fd), uintptr(unsafe.Pointer(event)), 0, 0)
-//	if e1 != 0 {=
-//		err = e1
-//	}
-//	return
-//}
 
 // EpollCtl calls a C implementation
 func EpollCtl(epfd int, op int, fd int, eventInterface FreeBSDEpollEventInterface) error {
@@ -109,18 +103,14 @@ func EpollCtl(epfd int, op int, fd int, eventInterface FreeBSDEpollEventInterfac
 
 // EpollWait calls a C implementation
 func EpollWait(epfd int, events []FreeBSDEpollEvent, msec int) (int, error) {
-	//var events []FreeBSDEpollEvent
-	//for _, e := range eventInterfaces {
-	//	events = append(events, e.(FreeBSDEpollEvent))
-	//}
 	var c_events [128]C.struct_event_t
-	n := int(C.run_epoll_wait(C.int(epfd), (*C.struct_event_t)(unsafe.Pointer(&c_events))))
-	if n < 0 {
-		return int(n), fmt.Errorf("Failed to wait epoll")
-	}
-	for i := 0; i < n; i++ {
+	//n := int(C.run_epoll_wait(C.int(epfd), (*C.struct_event_t)(unsafe.Pointer(&c_events))))
+	//if n < 0 {
+	//	return int(n), fmt.Errorf("Failed to wait epoll")
+	//}
+	for i := 0; i < epfd; i++ {
 		events[i].Fd = int32(c_events[i].fd)
 		events[i].Events = uint32(c_events[i].events)
 	}
-	return int(n), nil
+	return int(epfd), nil
 }
